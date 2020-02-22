@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="nuc.edu.cn.bzr.mapper.BlogMapper">
+    <resultMap id="findBlogAtBlogs" type="Blog" >
+        <id property="blogId" column="blog_id"/>
+        <result property="content" column="content"/>
+        <result property="title" column="title"/>
+        <result property="symbol" column="symbol"/>
+        <result property="view" column="view"/>
+        <result property="well" column="well"/>
+        <result property="ispull" column="ispull"/>
+        <result property="pictureId" column="picture_id"/>
+        <result property="blogDescribe" column="blog_describe"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <association property="type" javaType="Type" resultMap="Type"/>
+        <collection property="tags" ofType="Tag" resultMap="Tag"/>
+        <collection property="comments" ofType="Comment" resultMap="Comment"/>
+    </resultMap>
+    <resultMap id="Tag" type="Tag">
+        <id property="tagId" column="tag_id"/>
+        <result property="tagName" column="tag_name"/>
+    </resultMap>
+    <resultMap id="Comment" type="Comment">
+        <id property="commentName" column="comment_name"/>
+        <result property="commentQQ" column="commnet_QQ"/>
+        <result property="commentContent" column="comment_content"/>
+        <result property="commentTime" column="comment_content"/>
+    </resultMap>
+    <resultMap id="Type" type="Type">
+        <id property="typeId" column="type_id"/>
+        <result property="typeName" column="type_name"/>
+    </resultMap>
+    <select id="findAllBlogAtBlogs" parameterType="Page" resultMap="findBlogAtBlogs">
+         SELECT blog.blog_id,title,type_name,update_time,type.type_id FROM blog,type,blogandtype WHERE blog.blog_id=blogandtype.blog_id AND blogandtype.type_id=type.type_id ORDER BY blog_id DESC LIMIT #{nowcount},#{pagecount}
+    </select>
+    <select id="blogcount" resultType="Integer">
+        SELECT count(*) FROM blog
+    </select>
+    <select id="findBlogByBlogNameAndBlogType" parameterType="Blog" resultMap="findBlogAtBlogs">
+        SELECT
+	        blog.blog_id,
+	        title,
+	        type_name,
+        	update_time
+        FROM
+	        blog,
+	        type,
+	        blogandtype
+        WHERE
+	        blog.blog_id = blogandtype.blog_id
+	        AND blogandtype.type_id = type.type_id
+	    <trim>
+            <if test="title!=null and title!=''"> AND title LIKE "%"#{title}"%"</if>
+            <if test="type!=null and type.typeName!=null and type.typeName!=''"> AND type.type_name = #{type.typeName}</if>
+        </trim>
+        ORDER BY blog_id DESC LIMIT #{nowcount},2
+
+    </select>
+    <select id="findCountByBlogNameAndBlogType" parameterType="Blog" resultType="Integer">
+        SELECT
+        count(*)
+        FROM
+        blog,
+        type,
+        blogandtype
+        WHERE
+        blog.blog_id = blogandtype.blog_id
+        AND blogandtype.type_id = type.type_id
+        <trim>
+            <if test="title!=null and title!=''"> AND title LIKE "%"#{title}"%"</if>
+            <if test="type!=null and type.typeName!=null and type.typeName!=''"> AND type.type_name = #{type.typeName}</if>
+        </trim>
+    </select>
+    <delete id="deleteBlog" parameterType="Integer">
+        DELETE FROM blog WHERE blog_id=#{blogId}
+    </delete>
+    <select id="selectBlogByBlogId" parameterType="Integer" resultMap="findBlogAtBlogs">
+        SELECT
+	*
+FROM
+	blog,
+	type,
+	blogandtype,
+	blogandtag,
+	tag
+WHERE
+	blog.blog_id = blogandtype.blog_id
+	AND blogandtype.type_id = type.type_id
+	AND blog.blog_id = blogandtag.blog_id
+	AND blogandtag.tag_id = tag.tag_id
+	AND blog.blog_id = #{blogId}
+
+    </select>
+    <update id="updateBlog" parameterType="Blog">
+        UPDATE blog SET title=#{title},content=#{content},symbol=#{symbol},blog_describe=#{blogDescribe},update_time=#{updateTime} WHERE blog_id=#{blogId}
+    </update>
+    <insert id="insertBlog" parameterType="Blog" useGeneratedKeys="true" keyProperty="blogId">
+        INSERT INTO blog(content, title, symbol, view, well, ispull, create_time, update_time, picture_id, blog_describe) VALUE(#{content},#{title},#{symbol},#{view},#{well},#{ispull},#{createTime},#{updateTime},#{pictureId},#{blogDescribe})
+    </insert>
+    <select id="findBlogs" resultType="Blog">
+        SELECT blog_id,title,blog_describe,create_time,view,well FROM blog ORDER BY blog_id DESC LIMIT #{nowcount},5
+    </select>
+    <select id="getBlogCount" resultType="Integer">
+        SELECT COUNT(*) FROM blog
+    </select>
+    <select id="selectBlog" parameterType="Integer" resultMap="findBlogAtBlogs">
+                SELECT
+	*
+FROM
+	blog,
+	type,
+	blogandtype,
+	blogandtag,
+	tag
+WHERE
+	blog.blog_id = blogandtype.blog_id
+	AND blogandtype.type_id = type.type_id
+	AND blog.blog_id = blogandtag.blog_id
+	AND blogandtag.tag_id = tag.tag_id
+	AND blog.blog_id = #{blogId}
+    </select>
+    <update id="likeBlog" parameterType="Blog">
+        UPDATE blog SET well=#{well} WHERE blog_id=#{blogId}
+    </update>
+    <update id="lookBlog" parameterType="Blog">
+        UPDATE blog SET view=#{view} WHERE blog_id=#{blogId}
+    </update>
+    <select id="archivesBlog" resultType="Blog">
+        SELECT blog_id,title,create_time,symbol FROM blog
+    </select>
+    <select id="archivesCount" resultType="Integer">
+        SELECT count(*) FROM blog
+    </select>
+    <select id="AllSearch" parameterType="Blog" resultType="Blog">
+        SELECT blog_id,title,blog_describe,create_time,view,well FROM blog WHERE title like "%"#{title}"%" OR blog_describe like "%"#{title}"%" OR content like "%"#{title}"%" ORDER BY blog_id DESC LIMIT #{nowcount},5
+    </select>
+    <select id="AllSearchCount" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM blog WHERE title like "%"#{query}"%" OR blog_describe like "%"#{query}"%" OR content like "%"#{query}"%"
+    </select>
+</mapper>

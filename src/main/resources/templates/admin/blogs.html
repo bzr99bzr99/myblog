@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width ,initial-scale=1.0">
+    <title>管理后台</title>
+    <script src="../../static/js/jquery.js" th:src="@{/js/jquery.js}"></script>
+    <link rel="stylesheet" href="../../static/css/semantic.css" th:href="@{/css/semantic.css}">
+    <script src="../../static/js/semantic.js" th:src="@{/js/semantic.js}"></script>
+    <link rel="stylesheet" href="../../static/css/me.css" th:href="@{/css/me.css}">
+</head>
+<body>
+<!--导航-->
+<nav class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
+    <div class="ui container">
+        <div class="ui inverted secondary stackable menu">
+            <h2 class="ui teal header item">博客管理</h2>
+            <a href="#" class="active m-item m-mobile-hide item"><i class=" home icon"></i>博客</a>
+            <a href="/toAdmin/types" class="m-item m-mobile-hide item"><i class="idea icon"></i>分类</a>
+            <a href="/toAdmin/Tags" class="m-item m-mobile-hide item"><i class="tags icon"></i>标签</a>
+            <a class="m-item m-mobile-hide item disabled"><i class="spinner icon"></i>正在建设</a>
+            <div class="right m-item m-mobile-hide menu">
+                <div class="ui item dropdown">
+                    <img src="../../static/image/bg.jpg" th:src="@{/image/bg.jpg}" class="ui avatar image">
+                    感谢老铁送来的火箭
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <a href="/admin/exit" class="item">注销</a>
+                        <a class="item" onclick="modify()">修改</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui basic modal" id="modifyModal">
+        <div class="header">
+            修改
+        </div>
+        <div class="content">
+            <input type="text" >
+            <input type="password">
+        </div>
+    </div>
+    <a href="#" class="ui black menu toggle icon button m-top-right m-mobile-show">
+        <i class="sidebar icon"></i>
+    </a>
+</nav>
+<div class="ui attached pointing menu">
+    <div class="ui container">
+        <div class="right menu">
+            <a th:href="@{/toAdmin/input}" class="item">发布</a>
+            <a class="active teal item">列表</a>
+        </div>
+    </div>
+</div>
+
+<!--中间内容-->
+<div class="m-container-small m-padded-tb-big">
+    <div class="ui container">
+        <div class="ui form secondary segment">
+            <div class="inline fields">
+                <div class="field">
+                    <input type="text" name="title" placeholder="标题" id="title">
+                </div>
+                <div class="field">
+                    <select class="ui search dropdown" name="typeName" id="typeName">
+                        <option value="">分类</option>
+                        <option th:each="type:${types}" th:if="${types!=null}" th:value="${type.typeName}"
+                                th:text="${type.typeName}"></option>
+                    </select>
+                </div>
+                <div class="field">
+                    <button class="ui teal basic button" onclick="SearchBlog()">
+                        <i class="search icon"></i>
+                        搜索
+                    </button>
+                </div>
+                <div class="field">
+                    <a th:href="@{/toAdmin/input(nowpage=${page.nowpage+1},allpage=${page.allpage},pagecount=${page.pagecount},count=${page.count})}" class="ui blue basic button">
+                        <i class="plus icon"></i>
+                        新增
+                    </a>
+                </div>
+                <div class="field">
+                    <button class="ui green basic button" onclick="SearchAll()">
+                        <i class="table icon"></i>
+                        查询全部
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="ui success blog message" th:if="${message!=null}">
+            <i class="close icon"></i>
+            <div class="header" th:text="${message}">
+                修改成功
+            </div>
+        </div>
+        <table class="ui compact teal selectable striped table">
+            <thead>
+            <tr>
+                <th></th>
+                <th>标题</th>
+                <th>类型</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="tbody">
+            <tr th:if="${blogs!=null}" th:each="blog:${blogs}">
+                <td th:text="${blogStat.index+1}">1</td>
+                <td th:text="${blog.title}">高数</td>
+                <td th:text="${blog.type.typeName}">联系</td>
+                <td th:text="${#dates.format(blog.updateTime,'yyyy-MM-dd')}">2020-01-01 08:08</td>
+                <td>
+                    <a th:href="@{/admin/selectBlogByBlogId(blogId=${blog.blogId})}" class="ui mini basic teal button">
+                        <i class="edit icon"></i>编辑
+                    </a>
+                    <button class="ui mini basic red button" th:onclick="'YesDelete('+${blog.blogId}+')'"
+                            id="deleteButton"><i class="delete icon"></i>删除
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <th colspan="5">
+                    <div class="ui three column grid">
+                        <div class="ui left aligned column">
+                            <a href="#" class="ui mini teal basic button disabled" id="prebutton" onclick="prepage()" >
+                                <i class="left chevron icon"></i>
+                                上一页
+                            </a>
+                        </div>
+                        <div class="ui center aligned middle aligned column">
+                            第<span id="nowpage" th:text="${page.nowpage+1}">1</span>页/共<span id="allpage" th:text="${page.allpage}">5</span>页
+                            <input type="hidden" th:value="${page.pagecount}" id="pagecount">
+                            <input type="hidden" th:value="${page.count}" id="count">
+                            <input type="hidden" value="1" id="attribute">
+                            <input type="hidden" id="searchTitle">
+                            <input type="hidden" id="searchType">
+                        </div>
+                        <div class="ui right aligned column">
+                            <a href="#" th:class="${page.allpage>1?'ui mini teal basic button':'ui mini teal basic button disabled'}" id="nextbutton" onclick="nextpage()" >
+                                下一页
+                                <i class="right chevron icon"></i>
+                            </a>
+                        </div>
+                    </div>
+                </th>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<!--模态框-->
+<div class="ui basic modal " id="deleteModal">
+    <div class="ui center aligned header">
+        <i class="ui trash alternate outline icon"></i>
+        删除操作不可恢复，确认删除？
+    </div>
+    <input type="text" id="blogId" hidden="hidden">
+    <div class="actions">
+        <div class="ui red basic button" onclick="hideDeleteModal()">
+            <i class="remove icon"></i>
+            否
+        </div>
+        <div class="ui teal basic button" onclick="sendDelete()">
+            <i class="checkmark icon"></i>
+            是
+        </div>
+    </div>
+</div>
+
+<!--底部fotter-->
+<div th:replace="_fragment :: footer"></div>
+
+<script>
+
+    $('.blog.message .close').on('click', function () {
+        $(this).closest('.message').transition('fade');
+    });
+
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide')
+    });
+
+    $('.ui.dropdown').dropdown();
+    function nextpage() {
+        var title = $('#searchTitle').val();
+        var typeName = $('#searchType').val();
+        var attribute = $('#attribute').val();
+        $.ajax({
+            url:"/admin/nextpage",
+            type:"post",
+            data:{nowpage:$('#nowpage').text(),allpage:$('#allpage').text(),count:$('#count').val(),pagecount:$('#pagecount').val(),blogId:attribute,title:title,typeName:typeName},
+            success:function (data) {
+                if ($('#nowpage').text()==1){
+                    $('#prebutton').toggleClass('disabled');
+                }
+                if (Number($('#nowpage').text())+1==Number($('#allpage').text())){
+                    $('#nextbutton').toggleClass('disabled');
+                }
+                showBlogs(data);
+                $('#nowpage').text(Number($('#nowpage').text())+1);
+            }
+        })
+    }
+    function prepage() {
+        var title = $('#searchTitle').val();
+        var typeName = $('#searchType').val();
+        var attribute = $('#attribute').val();
+        $.ajax({
+            url:"/admin/prepage",
+            type:"post",
+            data:{nowpage:$('#nowpage').text(),allpage:$('#allpage').text(),count:$('#count').val(),pagecount:$('#pagecount').val(),blogId:attribute,title:title,typeName:typeName},
+            success:function (data) {
+                if ($('#nowpage').text()==2){
+                    $('#prebutton').toggleClass('disabled');
+                }
+                if ($('#nowpage').text()==$('#allpage').text()){
+                    $('#nextbutton').toggleClass('disabled');
+                }
+                showBlogs(data);
+                $('#nowpage').text(Number($('#nowpage').text())-1);
+            }
+        })
+    }
+    function YesDelete(blogId) {
+        $('#blogId').val(blogId);
+        $('#deleteModal').modal('show');
+    }
+
+    function hideDeleteModal() {
+        $('#deleteModal').modal('hide');
+    }
+    function modify(){
+        $('#modifyModal').modal('show');
+    }
+    function sendDelete() {
+        var blogId = $('#blogId').val();
+        $.ajax({
+            url: "/admin/deleteBlog",
+            type: "post",
+            data: {blogId: blogId},
+            success: function () {
+                SearchAll();
+                hideDeleteModal();
+            }
+        })
+    }
+
+    function SearchBlog() {
+        var title = $('#title').val();
+        var typeName = $('#typeName').val();
+        $('#searchTitle').val(title);
+        $('#searchType').val(typeName);
+        $.ajax({
+            url: "/admin/findBlogByTitleAndType",
+            type: "post",
+            data: {'type.typeName': typeName, title: title},
+            success: function (data) {
+                if (data.length == 0) {
+                    showNoMessage();
+                    $('#nowpage').text(0);
+                    $('#allpage').text(0);
+                    $('#prebutton').addClass('disabled');
+                    $('#nextbutton').addClass('disabled');
+                } else {
+                    $('#attribute').val(0);
+                    showBlogs(data);
+                    getPage();
+                }
+            }
+        })
+    }
+
+    function SearchAll() {
+        $.ajax({
+            url: "/admin/findAllBlogAtBlogs",
+            type: "post",
+            data: {},
+            success: function (data) {
+                if (data == null) {
+                    $('#tbody').html("");
+                    var html = "<tr>\n" +
+                        "                <td colspan=\"5\" class=\"ui center aligned\"><h3>没有博客发布</h3></td>\n" +
+                        "        </tr>";
+                    $('#tbody').append(html);
+                } else {
+                    showBlogs(data);
+                    $('#attribute').val(1);
+                    getPage();
+                }
+            }
+        })
+    }
+    function getPage() {
+        var title = $('#searchTitle').val();
+        var typeName = $('#searchType').val();
+        if ($('#attribute').val()==1){
+            $.ajax({
+                url:"/admin/getPage",
+                type:"post",
+                data:{attribute:$('#attribute').val()},
+                success:function (data) {
+                    $('#nowpage').text(data.nowpage+1);
+                    $('#allpage').text(data.allpage);
+                    $('#count').val(data.count);
+                    $('#prebutton').addClass('disabled');
+                    if (data.allpage>1){
+                        $('#nextbutton').removeClass('disabled');
+                    }else{
+                        $('#nextbutton').addClass('disabled');
+                    }
+                }
+            })
+        }else{
+            $.ajax({
+                url: "/admin/getPage",
+                type: "post",
+                data: {'type.typeName': typeName, title: title,attribute:$('#attribute').val()},
+                success: function (data) {
+                    $('#nowpage').text(data.nowpage+1);
+                    $('#allpage').text(data.allpage);
+                    $('#count').val(data.count);
+                    $('#prebutton').addClass('disabled');
+                    if (data.allpage>1){
+                        $('#nextbutton').removeClass('disabled');
+                    }else{
+                        $('#nextbutton').addClass('disabled');
+                    }
+                }
+            })
+        }
+
+
+    }
+    function showNoMessage() {
+        $('#tbody').html("");
+        var html = "<tr>\n" +
+            "                <td colspan=\"5\" class=\"ui center aligned\"><h3>无搜索结果</h3></td>\n" +
+            "        </tr>";
+        $('#tbody').append(html);
+    }
+
+    function showBlogs(data) {
+        $('#tbody').html("");
+        var html = "";
+        var c = 1;
+        for (var i = 0; i < data.length; i++, c++) {
+            var date = new Date(data[i].updateTime);
+            var mouth = date.getMonth() + 1;
+            var day = date.getDate();
+            if (day < 10) {
+                day = "0" + day;
+            }
+            if (mouth < 10) {
+                mouth = "0" + mouth;
+            }
+            var updateTime = date.getFullYear() + '-' + mouth + '-' + day;
+            html = html + "<tr>\n" +
+                "                <td>" + c + "</td>\n" +
+                "                <td>" + data[i].title + "</td>\n" +
+                "                <td>" + data[i].type.typeName + "</td>\n" +
+                "                <td>" + updateTime + "</td>\n" +
+                "                <td>\n" +
+                "<a href=\"/admin/selectBlogByBlogId?blogId=" + data[i].blogId + "\" class=\"ui mini basic teal button\">\n" +
+                "                        <i class=\"edit icon\"></i>编辑\n" +
+                "                    </a>" +
+                "<button class=\"ui mini basic red button\" onclick=\"YesDelete(" + data[i].blogId + ")\"\n" +
+                "                            id=\"deleteButton\"><i class=\"delete icon\"></i>删除\n" +
+                "                    </button>" +
+                "                </td>\n" +
+                "            </tr>"
+        }
+        $('#tbody').append(html);
+    }
+</script>
+</body>
+</html>

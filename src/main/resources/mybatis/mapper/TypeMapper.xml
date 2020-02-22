@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="nuc.edu.cn.bzr.mapper.TypeMapper">
+    <select id="findAllType" resultType="Type">
+        SELECT * FROM type
+    </select>
+    <select id="findType" parameterType="String" resultType="Type">
+        SELECT * FROM type WHERE type_name=#{typename}
+    </select>
+    <insert id="insertType" parameterType="Type" useGeneratedKeys="true" keyProperty="typeId">
+        INSERT INTO type(type_name) VALUES (#{typeName})
+    </insert>
+    <delete id="deleteType" parameterType="Integer">
+        DELETE FROM type WHERE type_id=#{typeId}
+    </delete>
+    <update id="updateType" parameterType="Type">
+        UPDATE type SET type_name=#{typeName} WHERE type_id=#{typeId}
+    </update>
+    <select id="getBlogNumByTypeId" parameterType="Integer" resultType="Integer">
+        SELECT COUNT(*) FROM blogandtype WHERE type_id=#{typeId}
+    </select>
+    <select id="findBlogByTypeId" parameterType="Type" resultType="Blog">
+        SELECT blog.blog_id,title,blog_describe,create_time,view,well FROM blog,blogandtype WHERE blogandtype.blog_id=blog.blog_id AND blogandtype.type_id=#{typeId} ORDER BY blog_id DESC LIMIT #{nowcount},5
+    </select>
+</mapper>

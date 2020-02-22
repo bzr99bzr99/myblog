@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width ,initial-scale=1.0">
+    <title>分类管理</title>
+    <script src="../../static/js/jquery.js" th:src="@{/js/jquery.js}"></script>
+    <link rel="stylesheet" href="../../static/css/semantic.css" th:href="@{/css/semantic.css}">
+    <script src="../../static/js/semantic.js" th:src="@{/js/semantic.js}"></script>
+    <link rel="stylesheet" href="../../static/css/me.css" th:href="@{/css/me.css}">
+</head>
+<body>
+<!--导航-->
+<nav class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
+    <div class="ui container">
+        <div class="ui inverted secondary stackable menu">
+            <h2 class="ui teal header item">博客管理</h2>
+            <a href="/toAdmin/" class="m-item m-mobile-hide item"><i class=" home icon"></i>博客</a>
+            <a class="active m-item m-mobile-hide item"><i class="idea icon"></i>分类</a>
+            <a href="/toAdmin/Tags" class="m-item m-mobile-hide item"><i class="tags icon"></i>标签</a>
+            <a class="m-item m-mobile-hide item disabled"><i class="spinner icon"></i>正在建设</a>
+            <div class="right m-item m-mobile-hide menu">
+                <div class="ui item dropdown">
+                    <img src="../../static/image/bg.jpg" th:src="@{/image/bg.jpg}" class="ui avatar image">
+                    感谢老铁送来的火箭
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <a href="/admin/exit" class="item">注销</a>
+                        <a href="#" class="item">修改</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="#" class="ui black menu toggle icon button m-top-right m-mobile-show">
+        <i class="sidebar icon"></i>
+    </a>
+</nav>
+
+<!--中间内容-->
+<div class="m-container-small m-padded-tb-big">
+    <div class="ui container">
+        <div class="ui form segment">
+            <div class="inline fields">
+                <div class="field">
+                    <select class="ui search dropdown" name="type" id="myType">
+                        <option value="分类">分类</option>
+                        <option th:if="${types!=null}" th:each="type:${types}" th:value="${type.getTypeName()}"
+                                th:text="${type.getTypeName()}">标签
+                        </option>
+                    </select>
+                </div>
+                <div class="field">
+                    <button class="ui teal basic button" onclick="SearchType()">
+                        <i class="search icon"></i>
+                        搜索
+                    </button>
+                </div>
+                <div class="field">
+                    <button class="ui blue basic button" id="add">
+                        <i class="plus icon"></i>
+                        新增
+                    </button>
+                </div>
+                <div class="field">
+                    <button class="ui green basic button" onclick="findAllType()">
+                        <i class="table icon"></i>
+                        查询全部
+                    </button>
+                </div>
+            </div>
+        </div>
+        <table class="ui stacked basic selectable striped three column table" id="TypeTable">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>类型</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="tbody">
+            <tr th:if="${types!=null}" th:each="type:${types}">
+                <td th:text="${typeStat.index+1}">1</td>
+                <td th:text="${type.typeName}" th:id="${typeStat.index+1}"></td>
+                <td>
+                    <button class="ui mini basic teal button"
+                            th:onclick="'editInput('+${typeStat.index+1}+','+${type.typeId}+')'"><i
+                            class="edit icon"></i>编辑
+                    </button>
+                    <button class="ui mini basic red button"
+                            th:onclick="'deleteType('+${type.getTypeId()}+','+${typeStat.index+1}+')'"><i
+                            class="delete icon"></i>删除
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+            <!--<tfoot>
+            <tr>
+                <th colspan="5">
+                    <div class="ui three column grid">
+                        <div class="ui left aligned column">
+                            <a href="#" class="ui mini teal basic button" th:if="${allpage>1}">
+                                <i class="left chevron icon"></i>
+                                上一页
+                            </a>
+                        </div>
+                        <div class="ui center aligned middle aligned column">
+                            第<span id="nowpage" th:text="${nowpage}">3</span>页/共<span id="allpage" th:text="${allpage}">5</span>页
+                        </div>
+                        <div class="ui right aligned column">
+                            <a href="#" class="ui mini teal basic button" th:if="${allpage>1}">
+                                下一页
+                                <i class="right chevron icon"></i>
+                            </a>
+                        </div>
+                    </div>
+                </th>
+            </tr>
+            </tfoot>-->
+            <tfoot class="ui secondary basic segment">
+            <tr>
+                <th colspan="5">&nbsp;</th>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<!--模态框-->
+<div class="ui modal" id="addModal">
+    <i class="close icon"></i>
+    <div class="header">
+        添加分类
+    </div>
+    <div class="content">
+        <div class="ui input fluid">
+            <input type="text" id="addTypeName" placeholder="请输入添加的类型名称">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui teal basic right aligned icon addButton button">
+            <i class="checkmark icon"></i>
+            添加
+        </div>
+    </div>
+</div>
+<div class="ui basic modal " id="deleteModal">
+    <div class="ui center aligned header">
+        <i class="ui trash alternate outline icon"></i>
+        删除操作不可恢复，确认删除？
+    </div>
+    <input type="text" id="deleteID" hidden="hidden">
+    <input type="text" id="deleteN" hidden="hidden">
+    <div class="actions">
+        <div class="ui red basic button" onclick="hideDeleteModal()">
+            <i class="remove icon"></i>
+            否
+        </div>
+        <div class="ui teal basic button" onclick="sendDelete()">
+            <i class="checkmark icon"></i>
+            是
+        </div>
+    </div>
+</div>
+<!--底部fotter-->
+<div th:replace="_fragment :: footer"></div>
+
+<script>
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide')
+    });
+
+    $('.ui.dropdown').dropdown();
+
+    $('#add').click(function () {
+        $('#addModal').modal('show');
+    });
+
+    function editInput(inputN, typeId) {
+        var typeName = $('#' + inputN).text();
+        var html = "<span class=\"ui input fluid\">\n" +
+            "                        <input type=\"text\" value=\"" + inputN + "\" hidden='hidden' id='inputN'>\n" +
+            "                        <input type=\"text\" value=\"" + typeId + "\" hidden='hidden' id='updateTypeId'>\n" +
+            "                        <input  type=\"text\" value=\"" + typeName + "\" id='updateTypeName' onblur=\"updateType()\">\n" +
+            "                    </span>";
+        $('#' + inputN).text("");
+        $('#' + inputN).append(html);
+    }
+
+    function updateType() {
+        var typeId = $('#updateTypeId').val();
+        var updateTypeName = $('#updateTypeName').val();
+        var n = $('#inputN').val();
+        $.ajax({
+            url: "/admin/updateType",
+            type: "post",
+            data: {typeId: typeId, typeName: updateTypeName},
+            success: function (data) {
+                if (data == 0) {
+                    alert("修改失败!");
+                } else {
+                    findAllType();
+                }
+            }
+        })
+    }
+
+    function deleteType(typeId, n) {
+        $('#deleteModal')
+            .modal('setting', 'closable', false)
+            .modal('show')
+        ;
+        $('#deleteID').val(typeId);
+        $('#deleteN').val(n);
+    }
+
+    function hideDeleteModal() {
+        $('#deleteModal').modal('hide');
+    }
+
+    function sendDelete() {
+        var typeId = $('#deleteID').val();
+        var deleteN = $('#deleteN').val();
+        $.ajax({
+            url: "/admin/deleteType",
+            type: "post",
+            data: {typeId: typeId},
+            success: function (data) {
+                if (data == 0) {
+                    alert("删除失败");
+                } else {
+                    console.log(data);
+                }
+            }
+        });
+        $('#deleteModal').modal('hide');
+        findAllType();
+    }
+
+    $('.addButton').click(function () {
+        var typeName = $('#addTypeName').val();
+        if (typeName == '') {
+            alert("创建标签不能为空！请重输入");
+            return;
+        }
+        $.ajax({
+            url: "/admin/insertType",
+            type: "post",
+            data: {typeName: typeName},
+            success: function (data) {
+                if (data == null) {
+                    alert("添加失败!");
+                } else {
+                    findAllType();
+                    $('#addModal').modal('hide');
+                }
+            }
+        })
+    });
+
+    function updateSelectType(data) {
+        var html = "<option value=\"" + data.typeName + "\">" + data.typeName + "</option>";
+        $('#myType').append(html);
+
+    }
+
+    function SearchType() {
+        var type = $('#myType').val();
+        $.ajax({
+            url: "/admin/findType",
+            type: "post",
+            data: {typeName: type},
+            success: function (data) {
+                if (data.typeId != null) {
+                    show(data);
+                }
+            }
+        })
+    }
+
+    function findAllType() {
+        $.ajax({
+            url: "/admin/findAllType",
+            type: "post",
+            data: {},
+            success: function (data) {
+                if (data.length!=0){
+                    $('#tbody').html("");
+                    $('#myType').html("");
+                    $('#myType').append("<option value=\"分类\">分类</option>");
+                    for (var i = 0; i < data.length; i++) {
+                        add(data[i], i + 1);
+                        updateSelectType(data[i]);
+                    }
+                }
+
+            }
+        })
+    }
+
+    function show(data) {
+        $('#tbody').html("");
+        var html = "<tr>\n" +
+            "                <td>1</td>\n" +
+            "                <td id='1'>" + data.typeName + "</td>\n" +
+            "                <td>\n" +
+            " <button class=\"ui mini basic teal button\" onclick='editInput(1," + data.typeId + ")'><i class=\"edit icon\"></i>编辑</button>" +
+            "                    <button class=\"ui mini basic red button\"\n" +
+            "                            onclick='deleteType(" + data.typeId + ",1)'><i\n" +
+            "                            class=\"delete icon\"></i>删除\n" +
+            "                    </button>\n" +
+            "                </td>\n" +
+            "            </tr>";
+        $('#tbody').append(html);
+    }
+
+    function add(data, n) {
+        var html = "<tr>\n" +
+            "                <td>" + n + "</td>\n" +
+            "                <td id='" + n + "'>" + data.typeName + "</td>\n" +
+            "                <td>\n" +
+            " <button class=\"ui mini basic teal button\" onclick='editInput(" + n + "," + data.typeId + ")'><i class=\"edit icon\"></i>编辑</button>" +
+            "                    <button class=\"ui mini basic red button\"\n" +
+            "                            onclick='deleteType(" + data.typeId + "," + n + ")'><i\n" +
+            "                            class=\"delete icon\"></i>删除\n" +
+            "                    </button>\n" +
+            "                </td>\n" +
+            "            </tr>";
+        $('#tbody').append(html);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width ,initial-scale=1.0">
+    <title>归档</title>
+    <script src="../static/js/jquery.js" th:src="@{/js/jquery.js}"></script>
+    <link rel="stylesheet" href="../static/css/semantic.css" th:href="@{/css/semantic.css}">
+    <script src="../static/js/semantic.js" th:src="@{/js/semantic.js}"></script>
+    <link rel="stylesheet" href="../static/css/me.css" th:href="@{/css/me.css}">
+</head>
+<body>
+<!--导航-->
+<div th:replace="_fragment :: nav(4)"></div>
+<!--中间内容-->
+<div class="m-container-small m-padded-tb-big">
+    <div class="ui container">
+        <div class="ui top attached padded segment">
+            <div class="ui middle aligned two column grid">
+                <div class="column">
+                    <h3 class="ui teal header">归档</h3>
+                </div>
+                <div class="right aligned column">
+                    共<h2 class="ui middle aligned orange header m-inline-block m-text-thin" th:text="${archivesCount}">114</h2>篇
+                </div>
+            </div>
+        </div>
+        <div th:each="item:${blogs}" th:if="${blogs!=null}">
+            <br>
+            <h2 class="ui center aligned header" th:text="'20'+${item.key}">2020</h2>
+            <div class="ui vertical fluid menu">
+                <a th:href="@{/to/blog(blogId=${blog.blogId})}" target="_blank" class="item" th:each="blog:${item.value}">
+                <span>
+                    <i class="teal circle icon"></i><span th:text="${blog.title}"></span>
+                    <div class="ui teal left small basic label" th:text="${#dates.format(blog.createTime,'yyyy-MM-dd')}">1月1</div>
+                </span>
+                    <div class="ui orange basic right aligned basic label" th:text="${blog.symbol}">原创</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--底部fotter-->
+<div th:replace="_fragment :: footer"></div>
+
+<script>
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide')
+    });
+</script>
+</body>
+</html>

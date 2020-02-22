@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width ,initial-scale=1.0">
+    <title>关于我</title>
+    <script src="../static/js/jquery.js" th:src="@{/js/jquery.js}"></script>
+    <link rel="stylesheet" href="../static/css/semantic.css" th:href="@{/css/semantic.css}">
+    <script src="../static/js/semantic.js" th:src="@{/js/semantic.js}"></script>
+    <link rel="stylesheet" href="../static/css/me.css" th:href="@{/css/me.css}">
+</head>
+<body>
+<!--导航-->
+<div th:replace="_fragment :: nav(5)"></div>
+<!--中间内容-->
+<div class="m-container-small stackable m-padded-tb-big">
+    <div class="ui container stackable ">
+        <div class="ui stackable grid">
+            <div class="eleven wide column">
+                <div class="ui segment">
+                    <img src="/image/cat.jpg" alt="" class="ui rounded image">
+                </div>
+            </div>
+            <div class="five wide column">
+                <div class="ui top attached segment">
+                    <div class="ui header">关于我</div>
+                </div>
+                <div class="ui attached segment">
+                    <p class="m-text">姓名：感谢老铁送来的火箭</p>
+                    <p class="m-text">职业：自由职业</p>
+                    <p class="m-text"></p>
+                </div>
+                <div class="ui attached segment">
+                    <p class="m-text">专业特长：</p>
+                    <a class="ui orange basic label m-margin-tb-tiny">Android</a>
+                    <a class="ui orange basic label m-margin-tb-tiny">Java</a>
+                    <a class="ui orange basic label m-margin-tb-tiny">Python</a>
+                    <a class="ui orange basic label m-margin-tb-tiny">C语言</a>
+                    <a class="ui orange basic label m-margin-tb-tiny">Linux</a>
+                    <a class="ui orange basic label m-margin-tb-tiny">算法</a>
+                </div>
+                <div class="ui attached segment">
+                    <p class="m-text">兴趣爱好：</p>
+                    <a class="ui teal basic label m-margin-tb-tiny">看电影</a>
+                    <a class="ui teal basic label m-margin-tb-tiny">编程</a>
+                    <a class="ui teal basic label m-margin-tb-tiny">旅游</a>
+                    <a class="ui teal basic label m-margin-tb-tiny">看书</a>
+                    <a class="ui teal basic label m-margin-tb-tiny">健身</a>
+                </div>
+                <div class="ui bottom attached segment">
+                    <button id="mygithub" class="ui m-github circular icon button" data-position="top center"><i class="github icon"></i></button>
+                    <button class="ui mwx circular icon button" data-position="top center"><i class="wechat icon"></i></button>
+                    <button class="ui mqq circular icon button" data-position="top center"><i class="qq icon"></i></button>
+                </div>
+                <div class="ui transition my-github popup top center hidden">github:bzr99bzr99</div>
+                <div class="ui transition mywx popup top center hidden">WX:bzr99bzr99</div>
+                <div class="ui transition myqq popup top center hidden">QQ:1561184225</div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--底部fotter-->
+<div th:replace="_fragment :: footer"></div>
+
+<script>
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide')
+    });
+
+    $('.mqq').popup({
+        popup : $('.myqq.popup'),
+        on : 'click',
+        position : 'top,center',
+    });
+    $('.m-github').popup({
+        popup : $('.my-github.popup'),
+        on : 'click',
+        position : 'top,center',
+    });
+    $('.mwx').popup({
+        popup : $('.mywx.popup'),
+        on : 'click',
+        position : 'top,center',
+    });
+
+</script>
+</body>
+</html>

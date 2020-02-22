@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="nuc.edu.cn.bzr.mapper.TagMapper">
+    <select id="findAllTag" resultType="Tag">
+        SELECT * FROM tag
+    </select>
+    <select id="findTagByName" parameterType="String" resultType="Tag">
+        SELECT * FROM tag WHERE tag_name=#{tagName}
+    </select>
+    <insert id="insertTag" parameterType="Tag">
+        INSERT INTO tag(tag_name) VALUES (#{tagName})
+    </insert>
+    <update id="updateTag" parameterType="Tag">
+        UPDATE tag SET tag_name=#{tagName} WHERE tag_id=#{tagId}
+    </update>
+    <select id="getBlogNumByTagId" parameterType="Integer" resultType="Integer">
+        SELECT COUNT(*) FROM blogandtag WHERE tag_id=#{tagId}
+    </select>
+    <select id="findBlogByTagId" parameterType="Tag" resultType="Blog">
+        SELECT blog.blog_id,title,blog_describe,create_time,view,well FROM blog,blogandtag WHERE blogandtag.blog_id=blog.blog_id AND blogandtag.tag_id=#{tagId} ORDER BY blog_id DESC LIMIT #{nowcount},5
+    </select>
+</mapper>

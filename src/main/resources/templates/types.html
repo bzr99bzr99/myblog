@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width ,initial-scale=1.0">
+    <title>分类</title>
+    <script src="../static/js/jquery.js" th:src="@{/js/jquery.js}"></script>
+    <link rel="stylesheet" href="../static/css/semantic.css" th:href="@{/css/semantic.css}">
+    <script src="../static/js/semantic.js" th:src="@{/js/semantic.js}"></script>
+    <link rel="stylesheet" href="../static/css/me.css" th:href="@{/css/me.css}">
+</head>
+<body>
+<!--导航-->
+<div th:replace="_fragment :: nav(2)"></div>
+<!--中间内容-->
+<input type="hidden" th:value="${activeId}" id="typeId">
+<input type="hidden" th:value="${1}" id="morecount">
+<div class="m-container-small m-padded-tb-big">
+    <div class="ui container">
+        <div class="ui top attached segment">
+            <div class="ui middle aligned two column grid">
+                <div class="column">
+                    <h3>分类</h3>
+                </div>
+                <div class="right aligned column">
+                    共<h2 class="ui orange header m-inline-block m-text-thin" th:text="${typeNum}">14</h2>个
+                </div>
+            </div>
+        </div>
+        <div class="ui bottom attached segment m-padded-tb-large">
+            <div class="ui labeled button m-margin-tb-tiny" th:each="type:${types}" th:onclick="'SearchType('+${type.typeId}+')'">
+                <div th:class="${activeId!=null&&activeId==type.typeId?'ui basic orange button':'ui basic teal button'}"
+                     th:text="${type.typeName}" th:id="'type'+${type.typeId}">思考与感悟
+                </div>
+                <div th:class="${activeId!=null&&activeId==type.typeId?'ui basic orange left pointing label':'ui basic teal left pointing label'}"
+                     th:text="${type.blogNum}" th:id="'typeId'+${type.typeId}">13
+                </div>
+            </div>
+        </div>
+        <div class="ui teal top attached segment" id="nowmore">
+            <div class="ui padded vertical segment m-padded-tb-big " th:each="blog:${blogs}" th:if="${blog!=null}">
+                <div class="ui stackable grid">
+                    <div class="eleven wide column">
+                        <h3 class="ui header" th:text="${blog.title}">你真的理解什么是财富吗？</h3>
+                        <p class="m-text" th:text="${blog.blogDescribe}">和角度看是否还款时间回到房间看是否合适是东方航空水电费看就是打开</p>
+                        <div class="ui grid">
+                            <div class="twelve wide column">
+                                <div class="ui horizontal link list">
+                                    <div class="item">
+                                        <img src="/image/cat.jpg"
+                                             alt="" class="ui avatar image">
+                                        <div class="content">
+                                            <a class="header">毕朝冉</a>
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <i class="calendar icon"></i><span class="ui middle aligned"
+                                                                           th:text="${#dates.format(blog.createTime,'yyyy-MM-dd')}"></span>
+                                    </div>
+                                    <div class="item">
+                                        <i class="eye icon"></i><span class="ui middle aligned"
+                                                                      th:text="${blog.view}"></span>
+                                    </div>
+                                    <div class="item">
+                                        <i class="thumbs up icon"></i><span class="ui middle aligned"
+                                                                            th:text="${blog.well}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="right aligned four wide column">
+                                <a th:href="@{/to/blog(blogId=${blog.blogId})}" target="_blank"
+                                   class="ui teal basic label m-padded-mini">查看内容</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="five wide column">
+                        <a>
+                            <img src="/image/goodluck.jpg" class="ui rounded image"/>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <span id="more">
+
+            </span>
+        </div>
+
+        <!--底部-->
+        <div class="ui secondary bottom attached middle aligned center aligned segment">
+            <span class="ui fluid button" onclick="findmore()" id="moreButton">点击查看更多</span>
+        </div>
+    </div>
+</div>
+
+
+<!--底部fotter-->
+<div th:replace="_fragment :: footer"></div>
+
+<script>
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide')
+    });
+    function SearchType(typeId) {
+        $('.orange').addClass('teal');
+        $('.orange').remove('orange');
+        $('#type'+typeId).removeClass('teal');
+        $('#type'+typeId).addClass('orange');
+        $('#typeId'+typeId).removeClass('teal');
+        $('#typeId'+typeId).addClass('orange');
+        $('#typeId').val(typeId);
+        $('#morecount').val(1);
+        $.ajax({
+            url:"/searchtype",
+            type:"post",
+            data:{typeId:typeId},
+            success:function (data) {
+                if (data.length<5){
+                    $('#moreButton').html('没有更多博客');
+                    $('#moreButton').addClass('disabled');
+                }else{
+                    $('#moreButton').html('点击查看更多');
+                    $('#moreButton').removeClass('disabled');
+                }
+                var html = "";
+                for (var i = 0;i < data.length;i++){
+                    var date = new Date(data[i].createTime);
+                    var month = date.getMonth();
+                    var day = date.getDate();
+                    console.log(date.getFullYear()+"-"+month+"-"+day);
+                    if (month < 10) {
+                        month = "0" + month;
+                    }
+                    if (day < 10) {
+                        day = "0" + day;
+                    }
+                    html = html +
+                        "                    <div class=\"ui padded vertical segment m-padded-tb-big\">\n" +
+                        "                        <div class=\"ui stackable grid\">\n" +
+                        "                            <div class=\"eleven wide column\">\n" +
+                        "                                <h3 class=\"ui header\">" + data[i].title + "</h3>\n" +
+                        "                                <p class=\"m-text\">" + data[i].blogDescribe + "</p>\n" +
+                        "                                <div class=\"ui grid\">\n" +
+                        "                                    <div class=\"twelve wide column\">\n" +
+                        "                                        <div class=\"ui horizontal link list\">\n" +
+                        "                                            <div class=\"item\">\n" +
+                        "                                                <img src=\"/image/cat.jpg\" " +
+                        "                                                     alt=\"\" class=\"ui avatar image\">\n" +
+                        "                                                <div class=\"content\">\n" +
+                        "                                                    <a href='' class=\"header\">感谢老铁送来的火箭</a>\n" +
+                        "                                                </div>\n" +
+                        "                                            </div>\n" +
+                        "                                            <div class=\"item\">\n" +
+                        "                                                <i class=\"calendar icon\"></i><span class=\"ui middle aligned\">"+date.getFullYear()+"-"+month+"-"+day+"</span>\n" +
+                        "                                            </div>\n" +
+                        "                                            <div class=\"item\">\n" +
+                        "                                                <i class=\"eye icon\"></i><span class=\"ui middle aligned\">"+data[i].view+"</span>\n" +
+                        "                                            </div>\n" +
+                        "                                            <div class=\"item\">\n" +
+                        "                                                <i class=\"thumbs up icon\"></i><span class=\"ui middle aligned\">"+data[i].well+"</span>\n" +
+                        "                                            </div>\n" +
+                        "                                        </div>\n" +
+                        "                                    </div>\n" +
+                        "                                    <div class=\"right aligned four wide column\">\n" +
+                        "                                        <a href=\"/to/blog?blogId="+data[i].blogId+"\" target=\"_blank\" class=\"ui teal basic label m-padded-mini\">查看内容</a>\n" +
+                        "                                    </div>\n" +
+                        "                                </div>\n" +
+                        "                            </div>\n" +
+                        "                            <div class=\"five wide column\">\n" +
+                        "                                <a href=\"#\" target=\"_blank\">\n" +
+                        "                                    <img src=\"/image/goodluck.jpg\"\n" +
+                        "                                         class=\"ui rounded image\"/>\n" +
+                        "                                </a>\n" +
+                        "                            </div>\n" +
+                        "                        </div>\n" +
+                        "                    </div>\n"
+                }
+                $('#more').html('');
+                $('#nowmore').html('');
+                $('#nowmore').append(html);
+            }
+        })
+    }
+    function findmore() {
+        var typeId = $('#typeId').val();
+        var morecount = $('#morecount').val();
+        $.ajax({
+            url:"/findMoreType",
+            type:"post",
+            data:{typeId:typeId,morecount:morecount},
+            success:function (data) {
+                if (data.length<5){
+                    $('#moreButton').html('没有更多博客');
+                    $('#moreButton').addClass('disabled');
+                }
+                addBlogs(data);
+                $('#morecount').val(Number(morecount)+1);
+            }
+        })
+    }
+    function addBlogs(data) {
+        html = "";
+        for (var i = 0; i < data.length; i++) {
+            var date = new Date(data[i].createTime);
+            var month = date.getMonth();
+            var day = date.getDate();
+            if (month < 10) {
+                month = "0" + month;
+            }
+            if (day < 10) {
+                day = "0" + day;
+            }
+            html = html +
+                "                    <div class=\"ui padded vertical segment m-padded-tb-big\">\n" +
+                "                        <div class=\"ui stackable grid\">\n" +
+                "                            <div class=\"eleven wide column\">\n" +
+                "                                <h3 class=\"ui header\">" + data[i].title + "</h3>\n" +
+                "                                <p class=\"m-text\">" + data[i].blogDescribe + "</p>\n" +
+                "                                <div class=\"ui grid\">\n" +
+                "                                    <div class=\"twelve wide column\">\n" +
+                "                                        <div class=\"ui horizontal link list\">\n" +
+                "                                            <div class=\"item\">\n" +
+                "                                                <img src=\"/image/cat.jpg\" " +
+                "                                                     alt=\"\" class=\"ui avatar image\">\n" +
+                "                                                <div class=\"content\">\n" +
+                "                                                    <a href='' class=\"header\">感谢老铁送来的火箭</a>\n" +
+                "                                                </div>\n" +
+                "                                            </div>\n" +
+                "                                            <div class=\"item\">\n" +
+                "                                                <i class=\"calendar icon\"></i><span class=\"ui middle aligned\">"+date.getFullYear()+"-"+month+"-"+day+"</span>\n" +
+                "                                            </div>\n" +
+                "                                            <div class=\"item\">\n" +
+                "                                                <i class=\"eye icon\"></i><span class=\"ui middle aligned\">"+data[i].view+"</span>\n" +
+                "                                            </div>\n" +
+                "                                            <div class=\"item\">\n" +
+                "                                                <i class=\"thumbs up icon\"></i><span class=\"ui middle aligned\">"+data[i].well+"</span>\n" +
+                "                                            </div>\n" +
+                "                                        </div>\n" +
+                "                                    </div>\n" +
+                "                                    <div class=\"right aligned four wide column\">\n" +
+                "                                        <a href=\"/to/blog?blogId="+data[i].blogId+"\" target=\"_blank\" class=\"ui teal basic label m-padded-mini\">查看内容</a>\n" +
+                "                                    </div>\n" +
+                "                                </div>\n" +
+                "                            </div>\n" +
+                "                            <div class=\"five wide column\">\n" +
+                "                                <a href=\"#\" target=\"_blank\">\n" +
+                "                                    <img src=\"/image/goodluck.jpg\"\n" +
+                "                                         class=\"ui rounded image\"/>\n" +
+                "                                </a>\n" +
+                "                            </div>\n" +
+                "                        </div>\n" +
+                "                    </div>\n"
+        }
+        $('#more').append(html);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="nuc.edu.cn.bzr.mapper.BlogAndOther">
+    <update id="updateTypeByBlogId" parameterType="Blog">
+        UPDATE blogandtype SET type_id = #{type.typeId} WHERE blog_id=#{blogId}
+    </update>
+    <delete id="deleteTagsByBlogId" parameterType="Integer">
+        DELETE FROM blogandtag WHERE blog_id=#{blogId}
+    </delete>
+    <insert id="insertTagByBlogId" parameterType="Blog">
+        INSERT INTO blogandtag(blog_id, tag_id) VALUES
+        <foreach collection="tags" item="item" separator=",">
+            (#{blogId},#{item.tagId})
+        </foreach>
+    </insert>
+    <insert id="insertTypeByBlogId" parameterType="Blog">
+        INSERT INTO blogandtype(blog_id, type_id) VALUES (#{blogId},#{type.typeId})
+    </insert>
+    <select id="findCommentsByBlogId" parameterType="Integer" resultType="Comment">
+        SELECT * FROM blogandcomment,comment WHERE comment.comment_id=blogandcomment.comment_id AND blogandcomment.blog_id=#{blogId}
+    </select>
+    <insert id="insertCommentByBlogId" parameterType="Blog">
+        INSERT INTO blogandcomment(blog_id, comment_id) VALUE (#{blogId},#{commentId})
+    </insert>
+    <delete id="deleteBlogAndTypeByBlogId" parameterType="Integer">
+        DELETE FROM blogandtype WHERE blog_id=#{blogId}
+    </delete>
+    <delete id="deleteBlogAndCommentByBlogId" parameterType="Integer">
+        DELETE FROM blogandcomment WHERE blog_id=#{blogId}
+    </delete>
+    <delete id="deleteBlogAndTagByBlogId" parameterType="Integer">
+        DELETE FROM blogandtag WHERE blog_id=#{blogId}
+    </delete>
+</mapper>
